@@ -3,10 +3,12 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ErrorIcon from '@material-ui/icons/Error';
 import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
@@ -26,12 +28,15 @@ const SyncActions = {
 
 const useStyles = makeStyles(theme => ({
   buttonGroup: {
-    textAlign: 'right',
+    display: 'flex',
+    flexDirection: 'row',
   },
-  button: {
-    margin: theme.spacing(1),
+  checkbox: {
+    alignSelf: 'start',
+    flex: '1 0 auto',
   },
   icon: {
+    alignSelf: 'end',
     marginRight: theme.spacing(1),
   },
 }));
@@ -52,12 +57,20 @@ function SyncAttempt(props) {
     });
   }
 
+  function showNotification(event) {
+    handleChange({target: {name: 'showNotification', value: event.target.checked}});
+    if (event.target.checked && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+  }
+
   function addAttempt() {
     props.update(oldAttempts => {
       const attempts = [...oldAttempts];
       attempts.splice(props.index, 0, {
         action: SyncActions.SUCCESS,
         delayMs: 0,
+        showNotification: false,
       });
       return attempts;
     });
@@ -108,6 +121,21 @@ function SyncAttempt(props) {
         </Select>
       </FormControl>}
       <div className={classes.buttonGroup}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={props.attempt.showNotification}
+              onChange={showNotification}
+              color="primary"
+              inputProps={{
+                name: 'showNotification',
+                id: 'shownotif',
+              }}
+            />
+          }
+          className={classes.checkbox}
+          label="Show Notification"
+        />
         <IconButton aria-label="add" className={classes.icon} onClick={addAttempt}>
           <AddIcon fontSize="small" />
         </IconButton>
@@ -125,6 +153,7 @@ export default function CreationForm() {
   const [attempts, setAttempts] = React.useState([{
     action: SyncActions.SUCCESS,
     delayMs: 0,
+    showNotification: false,
   }]);
 
   const [snackMessage, setSnackMessage] = React.useState(null);

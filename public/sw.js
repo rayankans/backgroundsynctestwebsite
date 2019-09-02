@@ -25,6 +25,12 @@ async function handleSync(tag) {
   else
     await idbSet(tag, metadata);
   
+  if (attempt.showNotification && Notification.permission === 'granted') {
+    self.registration.showNotification('Fired ' + tag, {
+      body: `attempt: ${metadata.numAttempts}`,  
+    });
+  }
+
   if (attempt.delayMs)
     await new Promise(r => setTimeout(r, attempt.delayMs));
 
