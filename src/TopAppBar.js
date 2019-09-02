@@ -49,7 +49,7 @@ export default function TopAppBar() {
             Background Sync
           </Typography>
           <Typography variant="body2" className={classes.subtitle} noWrap>
-            Test the feature
+            Control the registration
           </Typography>
           <IconButton 
               edge="end" className={classes.iconButton} color="inherit" aria-label="Menu"

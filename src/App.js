@@ -9,6 +9,7 @@ import TopAppBar from './TopAppBar';
 const useStyles = makeStyles(theme => ({
   root: {
     marginTop: theme.spacing(4),
+    marginBottom: theme.spacing(4),
     padding: theme.spacing(3, 2),
   },
 }));

@@ -3,13 +3,19 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/Button';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import DeleteIcon from '@material-ui/icons/Delete';
+import ErrorIcon from '@material-ui/icons/Error';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import WarningIcon from '@material-ui/icons/Warning';
+
+import {registerSync} from './sync-manager';
 
 /** @enum {string} */
 const SyncActions = {
@@ -121,13 +127,27 @@ export default function CreationForm() {
     delayMs: 0,
   }]);
 
+  const [snackMessage, setSnackMessage] = React.useState(null);
+
+  async function handleClick() {
+    const tag = document.getElementById('registration-tag').value ||
+                document.getElementById('registration-tag').placeholder;
+    try {
+      await registerSync(tag, attempts);
+      setSnackMessage('Successfully registered sync');
+    } catch (e) {
+      setSnackMessage('Error: ' + e.message);
+    }
+  }
+
+  const Icon = snackMessage && snackMessage.startsWith('Error: ') ? ErrorIcon : CheckCircleIcon;
   return (
     <>
       <Typography variant="h5" gutterBottom>
         Registration Tag
       </Typography>
       <TextField
-        id="standard-full-width"
+        id="registration-tag"
         style={{ margin: 8 }}
         placeholder={`tag-${Date.now()}`}
         fullWidth
@@ -143,10 +163,42 @@ export default function CreationForm() {
       {attempts.map((attempt, i) => <SyncAttempt attempt={attempt} key={i} index={i+1} update={setAttempts} />)}
 
       <div style={{width: '100%', display: 'flex'}}>
-        <Button variant="contained" color="primary" style={{margin: theme.spacing(4, 1, 1, 1), flex: '0 1 100%'}}>
+        <Button variant="contained" color="primary"
+                style={{margin: theme.spacing(4, 1, 4, 1), flex: '0 1 100%'}}
+                onClick={handleClick}
+        >
           Create Registration
         </Button>
       </div>
+
+      <div style={{display: 'flex', alignItems: 'center', verticalAlign: 'center', paddingBottom: theme.spacing(2)}}>
+        <WarningIcon style={{marginRight: theme.spacing(1)}} />
+        <Typography variant="body2" noWrap style={{fontSize: 14}}>
+          Unspecified attempts will default to success.
+        </Typography>
+      </div>
+      <div style={{display: 'flex', alignItems: 'center', verticalAlign: 'center'}}>
+        <WarningIcon style={{marginRight: theme.spacing(1)}} />
+        <Typography variant="body2" noWrap style={{fontSize: 14}}>
+          Large timeouts might cause race conditions.
+        </Typography>
+      </div>
+        
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        open={Boolean(snackMessage)}
+        onClose={() => setSnackMessage(null)}
+        ContentProps={{
+          'aria-describedby': 'message-id',
+        }}
+        autoHideDuration={4000}
+        message={
+          <span id="message-id" style={{display: 'flex', alignItems: 'center'}}>
+            <Icon style={{marginRight: theme.spacing(1)}}/>
+            {snackMessage}
+          </span>}
+      />
+      
     </>
   );
 }
